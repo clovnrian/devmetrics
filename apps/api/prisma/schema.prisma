@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Developer {
+  id        String   @id @default(cuid())
+  githubId  String   @unique
+  username  String
+  avatarUrl String?
+  email     String?
+  name      String?
+  teams     TeamMember[]
+  commits   Commit[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Team {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  members     TeamMember[]
+  repositories TeamRepository[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model TeamMember {
+  id          String    @id @default(cuid())
+  teamId      String
+  developerId String
+  role        String    @default("member")
+  team        Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  developer   Developer @relation(fields: [developerId], references: [id], onDelete: Cascade)
+  joinedAt    DateTime  @default(now())
+
+  @@unique([teamId, developerId])
+}
+
+model Repository {
+  id          String          @id @default(cuid())
+  githubId    String          @unique
+  name        String
+  fullName    String          @unique
+  owner       String
+  url         String
+  language    String?
+  teams       TeamRepository[]
+  commits     Commit[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model TeamRepository {
+  id           String     @id @default(cuid())
+  teamId       String
+  repositoryId String
+  team         Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, repositoryId])
+}
+
+model Commit {
+  id             String     @id @default(cuid())
+  sha            String     @unique
+  message        String
+  author         String
+  authorEmail    String?
+  additions      Int        @default(0)
+  deletions      Int        @default(0)
+  filesChanged   Int        @default(0)
+  score          Float      @default(50)
+  scoreBreakdown Json?
+  committedAt    DateTime
+  repositoryId   String
+  developerId    String
+  repository     Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  developer      Developer  @relation(fields: [developerId], references: [id], onDelete: Cascade)
+  createdAt      DateTime   @default(now())
+
+  @@index([developerId, committedAt])
+  @@index([repositoryId, committedAt])
+}
+
+model Settings {
+  id           String   @id @default(cuid())
+  githubToken  String?
+  userId       String   @unique
+  preferences  Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

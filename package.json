@@ -1,0 +1,24 @@
+{
+  "name": "devmetrics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Developer Performance Evaluation Platform",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "cd apps/api && npm run start:dev",
+    "dev:web": "cd apps/web && npm run dev",
+    "build": "npm run build:api && npm run build:web",
+    "build:api": "cd apps/api && npm run build",
+    "build:web": "cd apps/web && npm run build",
+    "lint": "eslint .",
+    "test": "npm run test:api",
+    "test:api": "cd apps/api && npm run test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
